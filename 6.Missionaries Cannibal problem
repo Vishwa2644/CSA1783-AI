@@ -1,0 +1,62 @@
+from collections import deque
+
+def is_valid_state(state):
+    missionaries_left, cannibals_left, boat_left = state
+    missionaries_right = 3 - missionaries_left
+    cannibals_right = 3 - cannibals_left
+    
+    # Check if the state violates any constraints
+    if (missionaries_left > 0 and missionaries_left < cannibals_left) or \
+       (missionaries_right > 0 and missionaries_right < cannibals_right):
+        return False
+    
+    return True
+
+def get_next_states(current_state):
+    states = []
+    missionaries_left, cannibals_left, boat_left = current_state
+    next_boat_left = not boat_left
+    
+    for missionaries in range(3 + 1):
+        for cannibals in range(3 + 1):
+            if 0 < missionaries + cannibals <= 2:
+                new_state = (
+                    missionaries_left - (missionaries if boat_left else 0) + (missionaries if not boat_left else 0),
+                    cannibals_left - (cannibals if boat_left else 0) + (cannibals if not boat_left else 0),
+                    next_boat_left
+                )
+                
+                if is_valid_state(new_state):
+                    states.append(new_state)
+    
+    return states
+
+def solve_missionaries_cannibals():
+    initial_state = (3, 3, True)
+    goal_state = (0, 0, False)
+    
+    visited = set()
+    queue = deque([(initial_state, [])])
+    
+    while queue:
+        current_state, path = queue.popleft()
+        
+        if current_state == goal_state:
+            return path + [current_state]
+        
+        visited.add(current_state)
+        
+        for next_state in get_next_states(current_state):
+            if next_state not in visited:
+                queue.append((next_state, path + [current_state]))
+    
+    return None
+
+# Example usage
+solution_path = solve_missionaries_cannibals()
+
+if solution_path:
+    for state in solution_path:
+        print(state)
+else:
+    print("No solution found.")
